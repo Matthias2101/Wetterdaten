@@ -18,9 +18,11 @@ library(ggridges)
 library(viridis)
 library(hrbrthemes)
 
+#vor 11.11.2022 Importfunktionen
+#11.11.2022 Ridge Diagramme mit 4 Perzentilen eingefügt
+#26.11.2022 Ridge Line Diagramme: variable Anzahl von Perzentilen, hier auf 3 gestellt, alle Jahreszahlen in Diagramm eingetragen
 
-
-
+# Pfade auf Daten setzen
 data_path <- '../Daten/Download20221105/gerclimatehourlyairtemp'
 data_stationenliste <- 'TU_Stundenwerte_Beschreibung_Stationen.txt'
 
@@ -32,6 +34,10 @@ file_temp_akt <- 'produkt_tu_stunde_20210503_20221103_01975.txt'
 
 results_path <- '../Ergebnisse/3_Hamburg_Temperatur_Oktober_2022/'
 
+#Einstellungen: Anzahl Perzentile in Ridgeline Plots
+ridgenoperz <- 3
+
+#Pfad auf Ordner mit Funktionen setzen
 dir_function <- 'Funktionen'
 file_functions <- 'Import_DWD_Daten.R'
 
@@ -45,13 +51,14 @@ df_functions <- str_c(dir_function,file_functions,sep='/')
 
 source(df_functions,local=TRUE)
 
+#Daten importieren
 stationenliste <- Import_Stationenliste_Temperatur(df_stationenliste)
 stationenliste_temp_hamburg <- filter(stationenliste, str_detect(Bundesland, "Hamburg"))
 
 temp_akt_HH <- Import_Temperaturen_Stuendlich(df_temp_akt)
 temp_hist_HH <- Import_Temperaturen_Stuendlich(df_temp_hist)
 
-
+#alle Datensätze aus hist Tabelle übernehmen, aus akt Tabelle nur die Datensätze, die in hist Tabelle nicht enthalten sind
 #in aktueller Temeraturliste nur die Datensätze behalten, die nicht in hist Tabelle enthalten sind
 #R for Data Science 13. Relational Data 13.5 Filtering Joins
 temp_akt_HH_notinhist <- anti_join(temp_akt_HH, temp_hist_HH, by=c("STATIONS_ID","MESS_DATUM"))
@@ -67,32 +74,19 @@ temp_HH_Oktober_taeglich <- temp_HH_Oktober %>%
             max_temp = max(TT_TU,na.rm = TRUE),
             mean_temp = mean(TT_TU,na.rm = TRUE) )
 
-temp_HH_10j <- filter(temp_HH_Oktober_taeglich, MESS_JAHR >= 2000)
+#temp_HH_10j <- filter(temp_HH_Oktober_taeglich, MESS_JAHR >= 2000)
 
-# Plot
-# ggplot(temp_HH_10j, aes(x = mean_temp, y = MESS_JAHR, fill = ..x..)) +
-#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-#   scale_fill_viridis(name = mean_temp, option = "C") +
-#   labs(title = 'Temparaturen Hamburg') +
-#   theme_ipsum() +
-#   theme(
-#     legend.position="none",
-#     panel.spacing = unit(0.1, "lines"),
-#     strip.text.x = element_text(size = 8)
-#   )
-
+#Ridgeline Plots
 #Anleitung unter https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html
 #Gallery unter https://r-graph-gallery.com/294-basic-ridgeline-plot.html#color
-ggplot(temp_HH_10j,  aes(x=mean_temp, y=MESS_JAHR, group=MESS_JAHR))+geom_density_ridges()
 
 #Skalen vorbereiten
-
+#erstes und letztes Jahr in Zeitreihe für Skala bestimmen
 min_jahr_t <- temp_HH_Oktober_taeglich %>%
   ungroup() %>%
   summarise(temp_HH_Oktober_taeglich,min_jahr = min(MESS_JAHR)) %>%
   select(min_jahr) 
 min_jahr_1 <- unlist(min_jahr_t[1,1])
-
 
 max_jahr_t <- temp_HH_Oktober_taeglich %>%
   ungroup() %>%
@@ -100,29 +94,29 @@ max_jahr_t <- temp_HH_Oktober_taeglich %>%
   select(max_jahr) 
 max_jahr_1 <- unlist(max_jahr_t[1,1])
 
-ggplot(temp_HH_Oktober_taeglich,  aes(x=mean_temp, y=MESS_JAHR, group=MESS_JAHR))+geom_density_ridges()
-
+#Ridge line plot mittlere Tagestemperaturen
 ggplot(temp_HH_Oktober_taeglich,  aes(x=mean_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
-  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=4) )+
+  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=1) )+
   stat_density_ridges(
     geom = "density_ridges_gradient", calc_ecdf = TRUE,
-    quantiles = 4, quantile_lines = TRUE
-  ) +
-  scale_fill_viridis_d(name = "Quartiles")
-  
-ggplot(temp_HH_Oktober_taeglich,  aes(x=max_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
-  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=4) )+
-  stat_density_ridges(
-    geom = "density_ridges_gradient", calc_ecdf = TRUE,
-    quantiles = 4, quantile_lines = TRUE
+    quantiles = ridgenoperz, quantile_lines = TRUE
   ) +
   scale_fill_viridis_d(name = "Quartiles")
 
-ggplot(temp_HH_Oktober_taeglich,  aes(x=min_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
-  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=4) )+
-  scale_y_continuous(breaks = seq(1948, 2022, by=4) )+
+#Ridge line plot max.Tagestemperaturen  
+ggplot(temp_HH_Oktober_taeglich,  aes(x=max_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
+  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=1) )+
   stat_density_ridges(
     geom = "density_ridges_gradient", calc_ecdf = TRUE,
-    quantiles = 4, quantile_lines = TRUE
+    quantiles = ridgenoperz, quantile_lines = TRUE
+  ) +
+  scale_fill_viridis_d(name = "Quartiles")
+
+#Ridge line plot min.Tagestemperaturen 
+ggplot(temp_HH_Oktober_taeglich,  aes(x=min_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
+  scale_y_continuous(breaks = seq(min_jahr_1, max_jahr_1, by=1) )+
+  stat_density_ridges(
+    geom = "density_ridges_gradient", calc_ecdf = TRUE,
+    quantiles = ridgenoperz, quantile_lines = TRUE
   ) +
   scale_fill_viridis_d(name = "Quartiles")

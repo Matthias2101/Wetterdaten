@@ -17,7 +17,6 @@ library(stringi)
 
 
 #Import der Liste der Meßstationen mit stündlicher Temperaturmessung
-
 Import_Stationenliste_Temperatur <- function(filename) {
   
   print("startet Import_Stationenliste_Niederschlag")
@@ -41,7 +40,8 @@ Import_Stationenliste_Temperatur <- function(filename) {
                                Bundesland   = substr(stationenliste_lines, 103, 200))
 }
 
-#Import der stündlichen Temperaturtabelle, Umwandlung der Einträge in Jahr/Monat/Tag/Stunde (zusätzliche Spalten)
+#Import der stündlichen Temperaturtabelle
+#Umwandlung der Einträge in Jahr/Monat/Tag/Stunde (zusätzliche Spalten)
 Import_Temperaturen_Stuendlich <- function(filename) {
   temperaturen <- read_delim(filename, 
                               delim =";",
