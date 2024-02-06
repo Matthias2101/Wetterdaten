@@ -115,8 +115,9 @@ Plot_mittleretagestemp <- ggplot(temp_HH_Oktober_taeglich,  aes(x=mean_temp, y=M
   ) +
   scale_fill_viridis_d(name = "Quartiles")
 
-
-Plot_mittleretagestempf <- ridgelinediagramm(temp_HH_Oktober_taeglich,'mean_temp','MESS_JAHR','MESS_TAG') 
+#Diagramme in extra Funktion ausgelagert:
+Plot_mittleretagestempf <- ridgelinediagramm(daten = temp_HH_Oktober_taeglich,datenspalte = 'mean_temp',gruppierungsspalte = 'MESS_JAHR', 
+                                             zeitspalte = 'MESS_TAG') 
 
 #Ridge line plot max.Tagestemperaturen  
 Plot_maxtagestemp <-ggplot(temp_HH_Oktober_taeglich,  aes(x=max_temp, y=MESS_JAHR, group=MESS_JAHR, fill=factor(stat(quantile))))+
