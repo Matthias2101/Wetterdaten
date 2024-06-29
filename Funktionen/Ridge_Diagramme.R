@@ -1,4 +1,10 @@
 #17.09.2023 Matthias Müller
+#06.02.2024 Matthias Müller: ridgelinediagramm  Überschrift, Skalenbeschriftungen aus Parameter der Funktion 
+
+#Ridgeline Plots
+#Anleitung unter https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html
+#Gallery unter https://r-graph-gallery.com/294-basic-ridgeline-plot.html#color
+
 
 #zeichnet Ridge Diagramme von Daten
 # daten               Inputtabelle
@@ -8,7 +14,7 @@
 #ridgenoperz          Anzahl der Perzentile in den Ridge Diagrammen, default auf 3 gesetzt
 
 #wenn man Spaltennamen als Parameter übergibt, dann dataframe[[spaltenname]] hinschreiben, ergibt vector 
-ridgelinediagramm <- function(daten,datenspalte,gruppierungsspalte,zeitspalte,ridgenoperz = 3) {
+ridgelinediagramm <- function(daten,datenspalte,gruppierungsspalte,zeitspalte,titel ="", beschriftung_y ="", beschriftung_x = "Temperatur",ridgenoperz = 3) {
   #Daten sortieren
   daten_s <- daten %>% 
     arrange(gruppierungsspalte, zeitspalte)
@@ -20,6 +26,9 @@ ridgelinediagramm <- function(daten,datenspalte,gruppierungsspalte,zeitspalte,ri
       geom = "density_ridges_gradient", calc_ecdf = TRUE,
       quantiles = ridgenoperz, quantile_lines = TRUE
     ) +
-    scale_fill_viridis_d(name = "Quartiles")
+    scale_fill_viridis_d(name = "Quartiles") +
+    xlab(beschriftung_x)+
+    ylab(beschriftung_y) +
+    ggtitle(titel)
   
 }

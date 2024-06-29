@@ -1,0 +1,51 @@
+# Konzept Analyse Klima- und Wetterdaten
+
+## Speicherkonzept / Ordnerstruktur
+
+###Wetterdaten
+Zunächst werden Daten des DWD gespeichert und analysiert. Für weitere Daten muss die Struktur erweitert werden. Die Daten des DWD werden in folgender Ordnerstruktur abgelegt:
+
+*DWDDownload20221105/ ... *  
+Unter einem dieser Ordner werden zunächst die zip Dateiendes DWD abgelegt. Sie werden dort entpackt (pro zip Datei ein Ordner ggf. mit Unterordnern desselben Namens). Diese Struktur wurde gewählt, da sich die Dateien ändern, es werden Daten angefügt und es gibt zip Dateien mit aktuellen, noch nicht abschließend validierten Daten.
+  
+Die in den Ordnern abgelegten Metadaten werden in der Regel mit abgespeichert.
+
+###Daten des DWD
+Temperaturdaten
+https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/  
+jeweils historical und recent
+
+
+## Analyse Temperaturdaten einer Wetterstation: wärmsten / kältesten Monat bestimmen
+- Durchschnittstemperatur: Verteilung kälteste / wärmste Monate nicht berücksichtigt
+- genauer: Aufteilung kältestes / mittleres / wärmstes Drittel der Tage eines Monats, minimale, maximale und wärmste der kalten und kälteste der warmen Temperaturen, Mittelwert der kalten / mittleren / warmen Tage bestimmen
+
+##Aufbau R Projekt
+Das R Projekt bzw. die R Skripte werden unter dem Ordner R_Projekt gespeichert. Dort liegt auch das git Archiv.  
+Unterordner sind Funktionen und Auswertungen.
+
+
+
+
+
+###R Funktionen
+####Import_DWD_Daten.R  
+enthält alle Funktionen, mit denen DWD Daten importiert werden
+Programmiertechnisch interessant: datenspalte und gruppierungsspalte können frei gewählt werden
+Vorbild für Programmierungen, wo Auswahl der Spalte(n) ein Parameter ist
+
+####Ridge_Diagramme.R
+zeichnet Ridge Line Diagramm aus Daten, Anzahl Gruppierungen (drei, vier, ... ) ist Parameter
+
+###Offene Punkte
+
+* Vorbereitungen der Datentabellen in Funktion auslagern
+* Durchschnitte testen und in extra Funktion auslagern
+* Testkonzept, insbes. Regressionstests?
+
+
+
+
+Markdown
+https://de.wikipedia.org/wiki/Markdown
+
