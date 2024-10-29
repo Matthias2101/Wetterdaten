@@ -16,6 +16,7 @@ library(stringi)
 
 library(ggridges)
 library(viridis)
+library(hrbrthemes)
 #library(hrbrthemes)
 
 #Was wird gemacht? Auswertung der Temperaturdaten des Monats Oktober der Wetterstation Fuhlsbüttel, 
@@ -32,6 +33,9 @@ library(viridis)
 #06.02.2024 Matthias Müller Diagramme durch Funktionsaufruf, alle anderen Ridge Line Diagramme auskommentiert
 
 # Pfade auf Daten setzen
+
+setwd("/home/matthias/Programme/Analyse_Wetter_Klima/R_Projekt/")
+
 data_path <- '../Daten/Download20221105/gerclimatehourlyairtemp'
 data_stationenliste <- 'TU_Stundenwerte_Beschreibung_Stationen.txt'
 
@@ -41,7 +45,7 @@ file_temp_hist <- 'produkt_tu_stunde_19490101_20211231_01975.txt'
 dir_temp_akt <- 'stundenwerte_TU_01975_akt'
 file_temp_akt <- 'produkt_tu_stunde_20210503_20221103_01975.txt'
 
-results_path <- 'Ergebnisse/3_Hamburg_Temperatur_Oktober_2022/'
+results_path <- '../Ergebnisse/3_Hamburg_Temperatur_Oktober_2022/'
 
 #Pfad auf Ordner mit Funktionen setzen
 dir_function <- 'Funktionen'
@@ -222,7 +226,7 @@ ergebnis <- apply(analysetab_std, 1, function(x) {
 
 ergebnis_t <- as.data.frame(t(ergebnis))
 for (i in 1:anzahl_toepfe) {
-  colnames(ergebnis_t)[i] <- paste("Gewichtete Temperatur",as.character(i))
+  colnames(ergebnis_t)[i] <- paste0("Gewichtete_Temperatur_",as.character(i))
 } 
 
 analysetab_ergebnis <- cbind(analysetab_std,ergebnis_t)
@@ -230,10 +234,22 @@ analysetab_ergebnis <- cbind(analysetab_std,ergebnis_t)
 # summarize_if https://dplyr.tidyverse.org/reference/summarise_all.html
 #einfachste Lösung: über alle Spalten bis auf Gruppierung summieren, nur benötigte Spalten weiter verwenden
 #später genauer untersuchen
+ergebnis_pro_monat_minmax <- analysetab_ergebnis %>%
+  group_by(MESS_JAHR,MESS_MONAT) %>%
+  summarise(max_temperatur = max(temperatur), 
+            min_temperatur = min(temperatur))  #%>%
+      #      summarize_all(sum) ) %>%
+           # across(vars('Gewichtete Temperatur 1': str_c('Gewichtete Temperatur ',as_character(anzahl_toepfe)))), sum) %>%
+# summarize_all(sum) %>%
+#  select(-(MESS_TAG:anzahl_toepfe))
 ergebnis_pro_monat <- analysetab_ergebnis %>%
   group_by(MESS_JAHR,MESS_MONAT) %>%
- summarize_all(sum) %>%
+  summarize_all(mean)  %>%
   select(-(MESS_TAG:anzahl_toepfe))
+
+# ergebnis_pro_monat <- inner_join(ergebnis_pro_monat,ergebnis_pro_monat_minmax, 
+#                                  by = c("MESS_JAHR", "MESS_MONAT"))
+
 
 # ... und jetzt endlich Durchschnittstemperatur pro Topf und Monat ausrechnen ...
 durchschnittstemp <- apply(ergebnis_pro_monat, 1, function(x){
@@ -246,12 +262,61 @@ durchschnittstemp <- apply(ergebnis_pro_monat, 1, function(x){
 
 durchschnittstemp_t <- as.data.frame(t(durchschnittstemp))
 for (i in 1:anzahl_toepfe) {
-  colnames(durchschnittstemp_t)[i] <- paste("Durchschnittstemperatur",as.character(i))
+  #paste fügt Leerzeichen ein, paste0 nicht
+  colnames(durchschnittstemp_t)[i] <- paste0("Durchschnittstemperatur_",as.character(i))
 } 
 
 
-durchschnittstemperatur <- cbind(ergebnis_pro_monat,durchschnittstemp_t )
-  
+durchschnittstemperatur_b <- cbind(ergebnis_pro_monat,durchschnittstemp_t )
+
+#nicht benötigte Spalten rauswerfen
+durchschnittstemperatur_b <- select(durchschnittstemperatur_b, -(contains("Topf"))) 
+durchschnittstemperatur_b <- select(durchschnittstemperatur_b, -(contains("Gewichtete_Temperatur"))) 
+#durchschnittstemperatur_b <- select(durchschnittstemperatur, -(contains("Gewichtete_Temperatur"))) 
+
+#jetzt noch min max
+
+durchschnittstemperatur_b <- inner_join(durchschnittstemperatur_b ,ergebnis_pro_monat_minmax, 
+                                      by = c("MESS_JAHR", "MESS_MONAT"))
+#max. Temperatur in Tabelle
+#Tabelle so transponieren, dass alle Spaltenüberschriften außer mess_jahr und mess_monat Bezeichnungen werden (Einträge in extra Spalte)
+durchschnittstemperatur <- pivot_longer(durchschnittstemperatur_b, cols= -c("MESS_JAHR", "MESS_MONAT"), 
+                                         names_to = "Verlauf", values_to = "Temperatur")
+
+#Diagramm zeichnen
+#Liniendiagramm
+
+
+#Tabelle filtern auf Oktober
+
+daten_diagramm_okt <- filter(durchschnittstemperatur, MESS_MONAT == 10)
+
+# https://r-graph-gallery.com/line-chart-several-groups-ggplot2.html
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#hexadecimal-color-code-chart
+# https://forum.posit.co/t/how-to-explicitly-map-labels-and-colors-to-variable-values-in-ggplot/112167
+Plot_diagramm_okt <- ggplot(daten_diagramm_okt, aes(x=MESS_JAHR, y=Temperatur, group=Verlauf, color=Verlauf)) +
+  geom_line() +
+  scale_color_manual(values = c('min_temperatur' =  "#0066FF",
+                                'Durchschnittstemperatur_1' = "#0000FF",
+                                'Durchschnittstemperatur_2' = "#006633",
+                                'Durchschnittstemperatur_3' = "#FF9900",
+                                'max_temperatur' = "#FF6633")
+                     )+
+  ggtitle("Temperaturverlauf im Oktober") +
+  theme_ipsum() +
+  ylab("Temperatur")
+
+#Plot_diagramm_okt 
+
+
+
+
+
+ggsave(paste0(results_path,"Plot_diagramm_okt.jpeg"),Plot_diagramm_okt, bg= "white")
+
+ggsave(paste0(results_path,"Plot_mittleretagestempf.jpeg"),Plot_mittleretagestempf, bg= "white")
+#exportieren
+
 #ab hier experiment
 
 #wozu wird das gebraucht?

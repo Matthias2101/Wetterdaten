@@ -10,7 +10,7 @@
 
 
 
-
+#wird von gewichte_pro_anzahl aufgerufen (siehe unten, appply pro Zeie auf Tabelle, die in Funktion gewichte_pro_anzahl bearbeitet wird)
 #gibt zu Anzahl der Zeitpunkte, Anzahl der Töpfe und einem Zeitpunkt Vektor der Gewichte (Verteilung auf Töpfe) 
 #Ergebnis: Vektor Gewichtug der Beobachtung in  jedem Topf
 
@@ -43,6 +43,8 @@ gewicht_pro_zpkt <- function(x) {
 
 #gibt zu Anzahl der Zeitpunkte, Anzahl der Töpfe und einem Zeitpunkt Vektor der Gewichte (Verteilung auf Töpfe) 
 #Ergebnis: Matrix, eine Zeile entspricht einem Topf, eine Spalte entspricht einer Zeile der Eingabetabelle
+#Funktion geht davon aus, dass drei Spalten in Tabelle tab_anzahl_datenpkte_exp Bezeichungen o.ä. enthalten
+
 #später mit Temparaturvektor multiplizieren: ergibt Summe der Temparaturen pro Topf
 # Zeilensumme: Summe der Gewichtungen pro Topf 
 # Division  ergibt Durchschnittstemperatur pro Topf
