@@ -291,6 +291,7 @@ durchschnittstemperatur <- pivot_longer(durchschnittstemperatur_b, cols= -c("MES
 
 daten_diagramm_okt <- filter(durchschnittstemperatur, MESS_MONAT == 10)
 
+scala_x <- unique(daten_diagramm_okt$MESS_JAHR )
 # https://r-graph-gallery.com/line-chart-several-groups-ggplot2.html
 # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#hexadecimal-color-code-chart
 # https://forum.posit.co/t/how-to-explicitly-map-labels-and-colors-to-variable-values-in-ggplot/112167
@@ -302,19 +303,22 @@ Plot_diagramm_okt <- ggplot(daten_diagramm_okt, aes(x=MESS_JAHR, y=Temperatur, g
                                 'Durchschnittstemperatur_3' = "#FF9900",
                                 'max_temperatur' = "#FF6633")
                      )+
+  scale_x_continuous(breaks= scala_x) +
   ggtitle("Temperaturverlauf im Oktober") +
-  theme_ipsum() +
+  #Beschriftung x Achse drehen
+  theme(axis.text.x=element_text(angle = 90))+ 
   ylab("Temperatur")
 
-#Plot_diagramm_okt 
 
 
 
 
+#https://ggplot2.tidyverse.org/reference/ggsave.html
+#hier Seitenverhältnis festlegen, dieses Diagramm muss breit sein
+ggsave(paste0(results_path,"Plot_diagramm_okt.jpeg"),Plot_diagramm_okt, bg= "white", dpi=300, width = 35, height = 10, units = "cm")
 
-ggsave(paste0(results_path,"Plot_diagramm_okt.jpeg"),Plot_diagramm_okt, bg= "white")
-
-ggsave(paste0(results_path,"Plot_mittleretagestempf.jpeg"),Plot_mittleretagestempf, bg= "white")
+#dieses Diagramm muss hoch sein
+ggsave(paste0(results_path,"Plot_mittleretagestempf.jpeg"),Plot_mittleretagestempf, bg= "white", dpi=300, width = 30, height = 40, units = "cm")
 #exportieren
 
 #ab hier experiment
